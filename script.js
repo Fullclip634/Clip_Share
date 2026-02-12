@@ -1,7 +1,7 @@
-// Shared Storage Endpoint
-const BASE_URL = "https://api.restful-api.dev/objects/ff8081819782e69e019c50f69388652b";
-// Using AllOrigins Proxy to bypass any CORS or network blocks on the user's browser
-const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(BASE_URL)}&timestamp=${Date.now()}`;
+// Shared Storage Endpoint (JSONBlob is better for large data)
+const BLOB_URL = "https://jsonblob.com/api/jsonBlob/019c50fc-1297-7e47-89eb-0b7cb35969ca";
+// Proxy for GET requests (to solve CORS blocks)
+const GET_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(BLOB_URL)}&timestamp=${Date.now()}`;
 
 // DOM Elements
 const codeInput = document.getElementById('code-input');
@@ -17,51 +17,33 @@ if (typeof lucide !== 'undefined') {
 
 // --- Main Logic ---
 
-// 1. Load Code on Startup
+// 1. Load Data
 window.addEventListener('load', async () => {
     if (statusMsg) {
         statusMsg.classList.remove('hidden');
-        statusMsg.innerText = "Connecting...";
+        statusMsg.innerText = "Syncing...";
     }
 
     try {
-        let data;
-        try {
-            // Try direct fetch first (fastest)
-            console.log("Trying direct fetch...");
-            const response = await fetch(BASE_URL);
-            if (response.ok) {
-                data = await response.json();
-                console.log("Direct fetch success");
-            } else {
-                throw new Error("Direct fetch failed");
-            }
-        } catch (e) {
-            // Fallback to proxy
-            console.log("Using proxy fallback...");
-            const response = await fetch(PROXY_URL);
-            if (!response.ok) throw new Error(`Sync Error (${response.status})`);
-            const wrapper = await response.json();
-            data = JSON.parse(wrapper.contents);
-            console.log("Proxy fetch success");
-        }
+        // We use proxy for GET to avoid CORS issues on load
+        const response = await fetch(GET_URL);
+        if (!response.ok) throw new Error("Sync unreachable");
 
-        if (data && data.data && typeof data.data.code !== 'undefined') {
-            let finalCode = data.data.code;
+        const wrapper = await response.json();
+        const data = JSON.parse(wrapper.contents);
 
-            // Try to decompress if it looks like compressed data
-            if (data.data.compressed === true) {
-                try {
-                    const decompressed = LZString.decompressFromBase64(finalCode);
-                    if (decompressed !== null) finalCode = decompressed;
-                } catch (e) {
-                    console.warn("Decompression failed, using raw data");
-                }
+        if (data && typeof data.code !== 'undefined') {
+            let finalCode = data.code;
+
+            // Try decompression
+            if (data.compressed === true) {
+                const decompressed = LZString.decompressFromBase64(finalCode);
+                if (decompressed) finalCode = decompressed;
             }
 
             if (codeInput) codeInput.value = finalCode;
             if (statusMsg) {
-                statusMsg.innerText = "Synced";
+                statusMsg.innerText = "Ready";
                 statusMsg.style.color = "#10b981";
                 setTimeout(() => statusMsg.classList.add('hidden'), 2000);
             }
@@ -75,112 +57,68 @@ window.addEventListener('load', async () => {
     }
 });
 
-// 2. Save Code
+// 2. Save Data
 if (btnSave) {
     btnSave.addEventListener('click', async () => {
         const code = codeInput ? codeInput.value : "";
 
-        // Visual Feedback
         const originalText = btnSave.innerHTML;
         btnSave.innerHTML = `<i data-lucide="loader-2" class="spin"></i> Syncing...`;
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         try {
-            console.log("Compressing data...");
-            const compressedCode = LZString.compressToBase64(code);
-            console.log("Saving to:", BASE_URL);
+            // Compress to save space and avoid 500 errors
+            const compressed = LZString.compressToBase64(code);
 
-            const response = await fetch(BASE_URL, {
+            const response = await fetch(BLOB_URL, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    name: "clipshare_v2",
-                    data: {
-                        code: compressedCode,
-                        compressed: true
-                    }
+                    code: compressed,
+                    compressed: true,
+                    updatedAt: new Date().toISOString()
                 })
             });
 
-            if (!response.ok) {
-                // If direct PUT fails, maybe try to show why
-                const errText = await response.text();
-                throw new Error(`Sync Blocked (${response.status})`);
-            }
+            if (!response.ok) throw new Error(`Server Error (${response.status})`);
 
-            // Success Feedback
             btnSave.innerHTML = `<i data-lucide="check"></i> Synced!`;
             if (typeof lucide !== 'undefined') lucide.createIcons();
-
-            setTimeout(() => {
-                btnSave.innerHTML = originalText;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }, 2000);
+            setTimeout(() => btnSave.innerHTML = originalText, 2000);
 
         } catch (err) {
             console.error("Save Error:", err);
-            btnSave.innerText = "Error: " + err.message;
-            setTimeout(() => {
-                btnSave.innerHTML = originalText;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }, 3000);
+            btnSave.innerText = "Sync Failed!";
+            setTimeout(() => btnSave.innerHTML = originalText, 3000);
         }
     });
 }
 
-// 3. Quick Copy
+// 3. Simple Utils
 if (btnCopy) {
     btnCopy.addEventListener('click', () => {
-        const code = codeInput ? codeInput.value : "";
-        navigator.clipboard.writeText(code);
-
-        // Visual Feedback
+        navigator.clipboard.writeText(codeInput.value);
         const originalText = btnCopy.innerHTML;
-        btnCopy.innerHTML = `<i data-lucide="check"></i> Copied!`;
+        btnCopy.innerHTML = `<i data-lucide="check"></i> Copied`;
         if (typeof lucide !== 'undefined') lucide.createIcons();
-
-        setTimeout(() => {
-            btnCopy.innerHTML = originalText;
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }, 2000);
+        setTimeout(() => btnCopy.innerHTML = originalText, 2000);
     });
 }
 
-// 4. Quick Paste
 if (btnPaste) {
     btnPaste.addEventListener('click', async () => {
         try {
             const text = await navigator.clipboard.readText();
-            if (codeInput) {
-                codeInput.value = text;
-
-                // Visual Feedback
-                const originalText = btnPaste.innerHTML;
-                btnPaste.innerHTML = `<i data-lucide="check"></i> Pasted!`;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-
-                setTimeout(() => {
-                    btnPaste.innerHTML = originalText;
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                }, 2000);
-            }
-        } catch (err) {
-            console.error("Paste Error:", err);
-            btnPaste.innerText = "Error!";
-            setTimeout(() => {
-                btnPaste.innerHTML = `<i data-lucide="clipboard-paste"></i> Paste`;
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            }, 2000);
-        }
+            codeInput.value = text;
+            const originalText = btnPaste.innerHTML;
+            btnPaste.innerHTML = `<i data-lucide="check"></i> Pasted`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+            setTimeout(() => btnPaste.innerHTML = originalText, 2000);
+        } catch (e) { alert("Please allow clipboard access."); }
     });
 }
 
-// Spin Animation
+// Animation
 const style = document.createElement('style');
-style.innerHTML = `
-    @keyframes spin { 100% { transform:rotate(360deg); } }
-    .spin { animation: spin 1s linear infinite; }
-`;
+style.innerHTML = `@keyframes spin { 100% { transform:rotate(360deg); } } .spin { animation: spin 1s linear infinite; }`;
 document.head.appendChild(style);

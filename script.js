@@ -21,37 +21,65 @@ if (typeof lucide !== 'undefined') {
 window.addEventListener('load', async () => {
     if (statusMsg) {
         statusMsg.classList.remove('hidden');
-        statusMsg.innerText = "Syncing...";
+        statusMsg.innerText = "Connecting...";
     }
 
     try {
-        // We use proxy for GET to avoid CORS issues on load
-        const response = await fetch(GET_URL);
-        if (!response.ok) throw new Error("Sync unreachable");
+        let data;
+        let success = false;
 
-        const wrapper = await response.json();
-        const data = JSON.parse(wrapper.contents);
+        // Try direct fetch first
+        try {
+            console.log("Attempting direct fetch...");
+            const response = await fetch(BLOB_URL);
+            if (response.ok) {
+                data = await response.json();
+                success = true;
+                console.log("Direct fetch success");
+            }
+        } catch (e) {
+            console.warn("Direct fetch failed, trying proxy...");
+        }
 
-        if (data && typeof data.code !== 'undefined') {
+        // Try proxy if direct failed
+        if (!success) {
+            try {
+                const response = await fetch(GET_URL);
+                if (response.ok) {
+                    const wrapper = await response.json();
+                    data = JSON.parse(wrapper.contents);
+                    success = true;
+                    console.log("Proxy fetch success");
+                }
+            } catch (e) {
+                console.error("Proxy fetch failed");
+            }
+        }
+
+        if (success && data && typeof data.code !== 'undefined') {
             let finalCode = data.code;
 
             // Try decompression
             if (data.compressed === true) {
-                const decompressed = LZString.decompressFromBase64(finalCode);
-                if (decompressed) finalCode = decompressed;
+                try {
+                    const decompressed = LZString.decompressFromBase64(finalCode);
+                    if (decompressed) finalCode = decompressed;
+                } catch (e) { console.warn("Decompression failed"); }
             }
 
             if (codeInput) codeInput.value = finalCode;
             if (statusMsg) {
-                statusMsg.innerText = "Ready";
+                statusMsg.innerText = "Synced";
                 statusMsg.style.color = "#10b981";
                 setTimeout(() => statusMsg.classList.add('hidden'), 2000);
             }
+        } else {
+            throw new Error("Could not reach cloud storage");
         }
     } catch (err) {
         console.error("Connect Error:", err);
         if (statusMsg) {
-            statusMsg.innerText = "Sync Offline";
+            statusMsg.innerText = "Connection Error: " + err.message;
             statusMsg.style.color = "#ef4444";
         }
     }

@@ -1,5 +1,5 @@
 // Shared Storage Endpoint
-const BIN_URL = "https://jsonblob.com/api/jsonBlob/1339116895186673664";
+const BIN_URL = "https://jsonblob.com/api/jsonBlob/1339126388435935232";
 
 // DOM Elements
 const codeInput = document.getElementById('code-input');

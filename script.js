@@ -21,21 +21,30 @@ if (typeof lucide !== 'undefined') {
 window.addEventListener('load', async () => {
     if (statusMsg) {
         statusMsg.classList.remove('hidden');
-        statusMsg.innerText = "Connecting to cloud...";
+        statusMsg.innerText = "Connecting...";
     }
 
     try {
-        console.log("Fetching via proxy:", PROXY_URL);
-        const response = await fetch(PROXY_URL);
-
-        if (!response.ok) {
-            throw new Error(`Proxy Error (${response.status})`);
+        let data;
+        try {
+            // Try direct fetch first (fastest)
+            console.log("Trying direct fetch...");
+            const response = await fetch(BASE_URL);
+            if (response.ok) {
+                data = await response.json();
+                console.log("Direct fetch success");
+            } else {
+                throw new Error("Direct fetch failed");
+            }
+        } catch (e) {
+            // Fallback to proxy
+            console.log("Using proxy fallback...");
+            const response = await fetch(PROXY_URL);
+            if (!response.ok) throw new Error(`Sync Error (${response.status})`);
+            const wrapper = await response.json();
+            data = JSON.parse(wrapper.contents);
+            console.log("Proxy fetch success");
         }
-
-        const wrapper = await response.json();
-        const data = JSON.parse(wrapper.contents); // AllOrigins wraps the result in 'contents'
-
-        console.log("Data received via proxy:", data);
 
         if (data && data.data && typeof data.data.code !== 'undefined') {
             if (codeInput) codeInput.value = data.data.code;
@@ -46,9 +55,9 @@ window.addEventListener('load', async () => {
             }
         }
     } catch (err) {
-        console.error("Load Error:", err);
+        console.error("Connect Error:", err);
         if (statusMsg) {
-            statusMsg.innerText = "Fetch Error: Use a VPN or check firewall.";
+            statusMsg.innerText = "Sync Offline";
             statusMsg.style.color = "#ef4444";
         }
     }

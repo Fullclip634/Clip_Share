@@ -26,10 +26,10 @@
         <!-- Header -->
         <header>
             <div class="logo-box">
-                <i data-lucide="code-2" class="logo-icon"></i>
+                <i data-lucide="cloud" class="logo-icon"></i>
             </div>
-            <h1>ClipShare</h1>
-            <p>The minimal, lightning-fast way to share code.<br><span>Just paste, click, and share.</span></p>
+            <h1>ClipShare Live</h1>
+            <p>Shared Clipboard. <span>Everyone sees what you type here.</span></p>
         </header>
 
         <!-- Main Panel -->
@@ -43,49 +43,27 @@
                         <div class="dot yellow"></div>
                         <div class="dot green"></div>
                     </div>
-                    <span id="window-title">NEW SNIPPET</span>
-
-                    <!-- View Mode Controls (Hidden by default) -->
-                    <div id="view-controls" class="hidden">
-                        <button id="btn-shorten" class="btn-secondary">
-                            <i data-lucide="share-2"></i>
-                            <span id="lbl-shorten">Share Short Link</span>
-                        </button>
-                        <button id="btn-copy" class="btn-primary">
-                            <i data-lucide="copy"></i>
-                            <span id="lbl-copy">Copy Code</span>
-                        </button>
-                        <a href="index.html" class="btn-secondary" id="btn-new">
-                            <i data-lucide="plus"></i> New
-                        </a>
-                    </div>
+                    <span id="window-title">LIVE SHARED FILE</span>
+                    <span id="status-msg" style="font-size: 12px; color: #6b7280; margin-left: auto;"></span>
                 </div>
 
                 <!-- Textarea (Edit Mode) -->
                 <div id="edit-mode" class="content-area">
-                    <textarea id="code-input" placeholder="// Paste your code here..."></textarea>
+                    <textarea id="code-input"
+                        placeholder="// Type here and click Save. Everyone will see it updates!"></textarea>
 
                     <div class="action-bar">
-                        <div id="error-msg" class="error-msg hidden">
-                            <i data-lucide="alert-circle"></i>
-                            <span>Please enter some code first.</span>
-                        </div>
-                        <button id="btn-generate" class="btn-primary-large">
-                            Generate Link <i data-lucide="arrow-right"></i>
+                        <button id="btn-save" class="btn-primary-large">
+                            <i data-lucide="save"></i> Save Changes
                         </button>
                     </div>
-                </div>
-
-                <!-- Code View (View Mode) -->
-                <div id="view-mode" class="content-area hidden">
-                    <pre><code id="code-output"></code></pre>
                 </div>
 
             </div>
         </div>
 
         <footer>
-            <p>&copy; 2024 ClipShare. Simple & Serverless.</p>
+            <p>&copy; 2024 ClipShare Live. Synced via JSONBlob.</p>
         </footer>
 
     </div>

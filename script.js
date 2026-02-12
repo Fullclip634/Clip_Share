@@ -47,7 +47,19 @@ window.addEventListener('load', async () => {
         }
 
         if (data && data.data && typeof data.data.code !== 'undefined') {
-            if (codeInput) codeInput.value = data.data.code;
+            let finalCode = data.data.code;
+
+            // Try to decompress if it looks like compressed data
+            if (data.data.compressed === true) {
+                try {
+                    const decompressed = LZString.decompressFromBase64(finalCode);
+                    if (decompressed !== null) finalCode = decompressed;
+                } catch (e) {
+                    console.warn("Decompression failed, using raw data");
+                }
+            }
+
+            if (codeInput) codeInput.value = finalCode;
             if (statusMsg) {
                 statusMsg.innerText = "Synced";
                 statusMsg.style.color = "#10b981";
@@ -74,7 +86,10 @@ if (btnSave) {
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         try {
+            console.log("Compressing data...");
+            const compressedCode = LZString.compressToBase64(code);
             console.log("Saving to:", BASE_URL);
+
             const response = await fetch(BASE_URL, {
                 method: 'PUT',
                 headers: {
@@ -82,7 +97,10 @@ if (btnSave) {
                 },
                 body: JSON.stringify({
                     name: "clipshare_v2",
-                    data: { code: code }
+                    data: {
+                        code: compressedCode,
+                        compressed: true
+                    }
                 })
             });
 

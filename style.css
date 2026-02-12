@@ -1,0 +1,355 @@
+/* Reset & Base */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: #f9fafb;
+    /* Light Gray */
+    color: #111827;
+    /* Dark Gray */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    overflow-x: hidden;
+    padding: 20px;
+}
+
+/* Background Blobs */
+.background-blobs {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.4;
+    animation: float 10s infinite ease-in-out;
+}
+
+.blob-1 {
+    top: -10%;
+    left: 10%;
+    width: 400px;
+    height: 400px;
+    background: #c7d2fe;
+    animation-delay: 0s;
+}
+
+/* Indigo 200 */
+.blob-2 {
+    top: 10%;
+    right: 10%;
+    width: 350px;
+    height: 350px;
+    background: #e9d5ff;
+    animation-delay: 2s;
+}
+
+/* Purple 200 */
+.blob-3 {
+    bottom: -10%;
+    left: 30%;
+    width: 400px;
+    height: 400px;
+    background: #fbcfe8;
+    animation-delay: 4s;
+}
+
+/* Pink 200 */
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    50% {
+        transform: translate(20px, -20px);
+    }
+}
+
+/* Layout */
+.container {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    margin-top: 40px;
+}
+
+/* Header */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo-box {
+    display: inline-flex;
+    padding: 16px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px -10px rgba(79, 70, 229, 0.2);
+    margin-bottom: 20px;
+}
+
+.logo-icon {
+    color: #4f46e5;
+    width: 42px;
+    height: 42px;
+}
+
+h1 {
+    font-size: 3.5rem;
+    font-weight: 900;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+    color: #111827;
+}
+
+p {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: #6b7280;
+    line-height: 1.5;
+}
+
+p span {
+    color: #9ca3af;
+}
+
+/* Glass Panel */
+.glass-panel {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 6px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    transition: transform 0.3s ease;
+}
+
+.glass-panel:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 30px 60px -15px rgba(79, 70, 229, 0.15);
+}
+
+.editor-window {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Window Controls */
+.window-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dots {
+    display: flex;
+    gap: 8px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.red {
+    background: #f87171;
+}
+
+.yellow {
+    background: #facc15;
+}
+
+.green {
+    background: #4ade80;
+}
+
+#window-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9ca3af;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Content Area */
+.content-area {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+#code-input {
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    padding: 24px;
+    border: none;
+    outline: none;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    resize: none;
+    background: transparent;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* View Mode & Pre */
+pre {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    overflow: auto;
+    padding: 24px;
+}
+
+code {
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    color: #374151;
+}
+
+/* Action Buttons */
+.action-bar {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.error-msg {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #ef4444;
+    background: #fef2f2;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid #fee2e2;
+    animation: fadeUp 0.3s ease;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+button,
+.btn-secondary {
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.btn-primary-large {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
+    border-radius: 12px;
+    font-size: 14px;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.btn-primary-large:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+}
+
+.btn-primary {
+    padding: 8px 16px;
+    background: #4f46e5;
+    color: white;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.btn-primary:hover {
+    background: #4338ca;
+}
+
+.btn-secondary {
+    padding: 8px 16px;
+    background: white;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.btn-secondary:hover {
+    background: #f3f4f6;
+    border-color: #d1d5db;
+}
+
+/* Utilities */
+.hidden {
+    display: none !important;
+}
+
+/* Footer */
+footer {
+    margin-top: 40px;
+    color: #9ca3af;
+    font-size: 14px;
+    text-align: center;
+}
+
+/* Mobile */
+@media (max-width: 640px) {
+    h1 {
+        font-size: 2.5rem;
+    }
+
+    .glass-panel {
+        padding: 4px;
+    }
+
+    #code-input {
+        padding: 16px;
+    }
+}

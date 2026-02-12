@@ -6,6 +6,8 @@ const PROXY_URL = `https://api.allorigins.win/get?url=${encodeURIComponent(BASE_
 // DOM Elements
 const codeInput = document.getElementById('code-input');
 const btnSave = document.getElementById('btn-save');
+const btnCopy = document.getElementById('btn-copy');
+const btnPaste = document.getElementById('btn-paste');
 const statusMsg = document.getElementById('status-msg');
 
 // Initialize Icons
@@ -97,6 +99,53 @@ if (btnSave) {
                 btnSave.innerHTML = originalText;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
             }, 3000);
+        }
+    });
+}
+
+// 3. Quick Copy
+if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+        const code = codeInput ? codeInput.value : "";
+        navigator.clipboard.writeText(code);
+
+        // Visual Feedback
+        const originalText = btnCopy.innerHTML;
+        btnCopy.innerHTML = `<i data-lucide="check"></i> Copied!`;
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        setTimeout(() => {
+            btnCopy.innerHTML = originalText;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 2000);
+    });
+}
+
+// 4. Quick Paste
+if (btnPaste) {
+    btnPaste.addEventListener('click', async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            if (codeInput) {
+                codeInput.value = text;
+
+                // Visual Feedback
+                const originalText = btnPaste.innerHTML;
+                btnPaste.innerHTML = `<i data-lucide="check"></i> Pasted!`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+
+                setTimeout(() => {
+                    btnPaste.innerHTML = originalText;
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                }, 2000);
+            }
+        } catch (err) {
+            console.error("Paste Error:", err);
+            btnPaste.innerText = "Error!";
+            setTimeout(() => {
+                btnPaste.innerHTML = `<i data-lucide="clipboard-paste"></i> Paste`;
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }, 2000);
         }
     });
 }

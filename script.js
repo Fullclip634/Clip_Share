@@ -1,5 +1,5 @@
-// Shared Storage Endpoint
-const BIN_URL = "https://jsonblob.com/api/jsonBlob/1339126388435935232";
+// Shared Storage Endpoint (Restful-API.dev)
+const API_URL = "https://api.restful-api.dev/objects/ff8081819782e69e019c509f10ca6371";
 
 // DOM Elements
 const codeInput = document.getElementById('code-input');
@@ -17,35 +17,34 @@ if (typeof lucide !== 'undefined') {
 window.addEventListener('load', async () => {
     if (statusMsg) {
         statusMsg.classList.remove('hidden');
-        statusMsg.innerText = "Loading shared code...";
+        statusMsg.innerText = "Connecting...";
     }
 
     try {
-        console.log("Fetching from:", BIN_URL);
-        const response = await fetch(BIN_URL);
+        console.log("Fetching from:", API_URL);
+        const response = await fetch(API_URL);
         console.log("Response status:", response.status);
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`Connection Error (${response.status})`);
         }
 
         const data = await response.json();
         console.log("Data received:", data);
 
-        if (data && typeof data.code !== 'undefined') {
-            if (codeInput) codeInput.value = data.code;
+        if (data && data.data && typeof data.data.code !== 'undefined') {
+            if (codeInput) codeInput.value = data.data.code;
             if (statusMsg) {
-                statusMsg.innerText = "Loaded!";
+                statusMsg.innerText = "Synced";
+                statusMsg.style.color = "#10b981";
                 setTimeout(() => statusMsg.classList.add('hidden'), 2000);
             }
-        } else {
-            if (statusMsg) statusMsg.innerText = "Loaded (Empty)";
         }
     } catch (err) {
         console.error("Load Error:", err);
         if (statusMsg) {
-            statusMsg.innerText = "Error: " + err.message;
-            statusMsg.style.color = "red";
+            statusMsg.innerText = "Sync Offline: " + err.message;
+            statusMsg.style.color = "#ef4444";
         }
     }
 });
@@ -61,20 +60,22 @@ if (btnSave) {
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
         try {
-            console.log("Saving to:", BIN_URL);
-            const response = await fetch(BIN_URL, {
+            console.log("Saving to:", API_URL);
+            const response = await fetch(API_URL, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ code: code })
+                body: JSON.stringify({
+                    name: "clipshare_v1",
+                    data: { code: code }
+                })
             });
 
             console.log("Save response status:", response.status);
 
             if (!response.ok) {
-                throw new Error(`Save failed! status: ${response.status}`);
+                throw new Error(`Sync Failed (${response.status})`);
             }
 
             // Success Feedback
@@ -88,7 +89,7 @@ if (btnSave) {
 
         } catch (err) {
             console.error("Save Error:", err);
-            btnSave.innerText = "Failed: " + err.message;
+            btnSave.innerText = "Error: " + err.message;
             setTimeout(() => {
                 btnSave.innerHTML = originalText;
                 if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -100,7 +101,7 @@ if (btnSave) {
 // Spin Animation
 const style = document.createElement('style');
 style.innerHTML = `
-    @keyframes spin { 100% { -webkit-transform: rotate(360deg); transform:rotate(360deg); } }
+    @keyframes spin { 100% { transform:rotate(360deg); } }
     .spin { animation: spin 1s linear infinite; }
 `;
 document.head.appendChild(style);
